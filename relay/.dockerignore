@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Development
+*.md
+!README.md
+.env*
+.air.toml
+tmp/
+
+# Build artifacts
+relay
+*.exe
+data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Tests
+*_test.go
+tests/
