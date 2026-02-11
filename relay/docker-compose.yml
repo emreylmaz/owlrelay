@@ -1,27 +1,26 @@
 version: '3.8'
 
 services:
-  relay:
+  owlrelay:
     build: .
-    image: owlrelay/relay:latest
+    # Or use pre-built image:
+    # image: ghcr.io/emreylmaz/owlrelay/relay:latest
     container_name: owlrelay
     restart: unless-stopped
     ports:
       - "3000:3000"
-    environment:
-      - PORT=3000
-      - DB_PATH=/data/owlrelay.db
-      - SCREENSHOT_PATH=/data/screenshots
-      - LOG_LEVEL=info
     volumes:
       - owlrelay-data:/data
+    environment:
+      - PORT=3000
+      - LOG_LEVEL=info
+      - RATE_LIMIT_DEFAULT=100
+      - SCREENSHOT_TTL=30
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "/relay", "version"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 5s
 
 volumes:
   owlrelay-data:
-    driver: local
