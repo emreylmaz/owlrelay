@@ -66,6 +66,10 @@ function doConnect(): void {
   try {
     // Build WebSocket URL with token
     const wsUrl = new URL(currentRelayUrl);
+    // Ensure /ws path
+    if (!wsUrl.pathname.endsWith('/ws')) {
+      wsUrl.pathname = wsUrl.pathname.replace(/\/?$/, '/ws');
+    }
     wsUrl.searchParams.set('token', currentToken);
     
     socket = new WebSocket(wsUrl.toString());

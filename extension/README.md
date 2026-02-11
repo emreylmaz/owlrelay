@@ -43,9 +43,13 @@ The built extension will be in the `dist` folder.
 
 ### Relay URL
 
-Enter the URL of your OwlRelay server. Default is `ws://localhost:3000`.
+Enter the base URL of your OwlRelay server (the extension will automatically append `/ws`).
 
-For self-hosted setups with TLS, use `wss://your-domain.com`.
+Examples:
+- Local: `ws://localhost:3000`
+- Self-hosted: `wss://your-domain.com`
+
+> **Note:** You don't need to add `/ws` to the URL - the extension handles this automatically.
 
 ### Token
 

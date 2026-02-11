@@ -1,6 +1,6 @@
 {
   "name": "owlrelay-extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OwlRelay Chrome Extension - Connect your browser to AI agents",
   "type": "module",
   "scripts": {
