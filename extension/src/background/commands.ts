@@ -99,7 +99,7 @@ async function executeCommand(
   });
 }
 
-async function captureScreenshot(tabId: number): Promise<{ dataUrl: string }> {
+async function captureScreenshot(tabId: number): Promise<{ data: string; width: number; height: number }> {
   // First, make sure the tab is active
   const tab = await chrome.tabs.get(tabId);
   if (!tab.windowId) {
@@ -119,7 +119,18 @@ async function captureScreenshot(tabId: number): Promise<{ dataUrl: string }> {
     quality: 90,
   });
   
-  return { dataUrl };
+  // Extract base64 data without the data URL prefix
+  const base64Data = dataUrl.split(',')[1];
+  
+  // Get image dimensions using offscreen canvas (service worker compatible)
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  const bitmap = await createImageBitmap(blob);
+  const width = bitmap.width;
+  const height = bitmap.height;
+  bitmap.close();
+  
+  return { data: base64Data, width, height };
 }
 
 function sendCommandResponse(
