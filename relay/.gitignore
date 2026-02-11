@@ -1,0 +1,31 @@
+# Binaries
+relay
+*.exe
+
+# Data directories
+data/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage.out
+coverage.html
+
+# Temporary files
+tmp/
+*.tmp
+*.log
