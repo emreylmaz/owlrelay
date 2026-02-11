@@ -1,0 +1,22 @@
+{
+  "name": "owlrelay-extension",
+  "version": "0.1.0",
+  "description": "OwlRelay Chrome Extension - Connect your browser to AI agents",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "preact": "^10.19.3"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.23",
+    "@preact/preset-vite": "^2.8.2",
+    "@types/chrome": "^0.0.260",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
+  }
+}
