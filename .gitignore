@@ -1,0 +1,58 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+relay/relay
+relay/owlrelay
+
+# Test binary
+*.test
+
+# Output
+*.out
+
+# Go
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Data
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+data/
+screenshots/
+
+# Logs
+*.log
+
+# Node (extension)
+node_modules/
+dist/
+.cache/
+
+# Build
+build/
+tmp/
+
+# Coverage
+coverage/
+*.cover
+*.coverage
