@@ -113,6 +113,7 @@ func (h *Handlers) Command(w http.ResponseWriter, r *http.Request) {
 
 	var req models.CommandAPIRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Debug().Err(err).Msg("Failed to decode command request")
 		writeError(w, http.StatusBadRequest, "INVALID_REQUEST", "Invalid JSON body")
 		return
 	}
@@ -129,7 +130,7 @@ func (h *Handlers) Command(w http.ResponseWriter, r *http.Request) {
 
 	timeout := req.Timeout
 	if timeout <= 0 {
-		timeout = 5000 // Default 5 seconds
+		timeout = h.cfg.CommandTimeout
 	}
 
 	cmd := &models.CommandRequest{
@@ -182,6 +183,7 @@ func (h *Handlers) Screenshot(w http.ResponseWriter, r *http.Request) {
 
 	var req models.ScreenshotRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Debug().Err(err).Msg("Failed to decode screenshot request")
 		writeError(w, http.StatusBadRequest, "INVALID_REQUEST", "Invalid JSON body")
 		return
 	}
@@ -242,8 +244,13 @@ func (h *Handlers) Screenshot(w http.ResponseWriter, r *http.Request) {
 	filename := uuid.New().String() + "." + format
 	filePath := filepath.Join(h.cfg.ScreenshotPath, filename)
 
-	// Decode base64 and save
-	if err := saveBase64ToFile(data, filePath); err != nil {
+	// Decode base64 and save (with size validation)
+	if err := saveBase64ToFile(data, filePath, h.cfg.MaxScreenshotSize); err != nil {
+		if _, ok := err.(*FileSizeError); ok {
+			log.Warn().Int("maxMB", h.cfg.MaxScreenshotSize).Msg("Screenshot size exceeds limit")
+			writeError(w, http.StatusBadRequest, "FILE_TOO_LARGE", "Screenshot exceeds maximum size limit")
+			return
+		}
 		log.Error().Err(err).Msg("Failed to save screenshot")
 		writeError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to save screenshot")
 		return
@@ -284,6 +291,7 @@ func (h *Handlers) Snapshot(w http.ResponseWriter, r *http.Request) {
 
 	var req models.SnapshotRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Debug().Err(err).Msg("Failed to decode snapshot request")
 		writeError(w, http.StatusBadRequest, "INVALID_REQUEST", "Invalid JSON body")
 		return
 	}
@@ -295,12 +303,12 @@ func (h *Handlers) Snapshot(w http.ResponseWriter, r *http.Request) {
 
 	maxDepth := req.MaxDepth
 	if maxDepth <= 0 {
-		maxDepth = 10
+		maxDepth = h.cfg.DefaultSnapshotMaxDepth
 	}
 
 	maxLength := req.MaxLength
 	if maxLength <= 0 {
-		maxLength = 100 * 1024 // 100KB
+		maxLength = h.cfg.DefaultSnapshotMaxLength
 	}
 
 	cmd := &models.CommandRequest{
@@ -381,9 +389,16 @@ func writeError(w http.ResponseWriter, status int, code, message string) {
 	})
 }
 
-func saveBase64ToFile(base64Data, filePath string) error {
+func saveBase64ToFile(base64Data, filePath string, maxSizeMB int) error {
+	// Check base64 size before decoding (rough estimate: base64 is ~4/3 of original)
+	maxBase64Size := maxSizeMB * 1024 * 1024 * 4 / 3
+	if len(base64Data) > maxBase64Size {
+		return &FileSizeError{MaxMB: maxSizeMB, ActualBytes: len(base64Data) * 3 / 4}
+	}
+
 	// Remove data URL prefix if present
-	if strings.Contains(base64Data[:min(100, len(base64Data))], ",") {
+	checkLen := min(100, len(base64Data))
+	if strings.Contains(base64Data[:checkLen], ",") {
 		parts := strings.SplitN(base64Data, ",", 2)
 		if len(parts) == 2 {
 			base64Data = parts[1]
@@ -396,14 +411,22 @@ func saveBase64ToFile(base64Data, filePath string) error {
 		return err
 	}
 
+	// Final size check after decoding
+	if len(decoded) > maxSizeMB*1024*1024 {
+		return &FileSizeError{MaxMB: maxSizeMB, ActualBytes: len(decoded)}
+	}
+
 	return os.WriteFile(filePath, decoded, 0644)
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
+// FileSizeError indicates the file exceeds maximum allowed size
+type FileSizeError struct {
+	MaxMB       int
+	ActualBytes int
+}
+
+func (e *FileSizeError) Error() string {
+	return "file size exceeds maximum allowed"
 }
 
 // RegisterRoutes registers all API routes

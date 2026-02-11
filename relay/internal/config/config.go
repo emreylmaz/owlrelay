@@ -20,8 +20,9 @@ type Config struct {
 	DBPath string `envconfig:"DB_PATH" default:"./data/owlrelay.db"`
 
 	// Screenshots
-	ScreenshotPath string `envconfig:"SCREENSHOT_PATH" default:"./data/screenshots"`
-	ScreenshotTTL  int    `envconfig:"SCREENSHOT_TTL" default:"30"` // seconds
+	ScreenshotPath    string `envconfig:"SCREENSHOT_PATH" default:"./data/screenshots"`
+	ScreenshotTTL     int    `envconfig:"SCREENSHOT_TTL" default:"30"`      // seconds
+	MaxScreenshotSize int    `envconfig:"MAX_SCREENSHOT_SIZE" default:"10"` // MB
 
 	// Rate Limiting
 	RateLimitDefault int `envconfig:"RATE_LIMIT_DEFAULT" default:"100"` // requests per minute
@@ -35,6 +36,10 @@ type Config struct {
 
 	// Command
 	CommandTimeout int `envconfig:"COMMAND_TIMEOUT" default:"30000"` // milliseconds
+
+	// Snapshot defaults
+	DefaultSnapshotMaxDepth  int `envconfig:"DEFAULT_SNAPSHOT_MAX_DEPTH" default:"10"`
+	DefaultSnapshotMaxLength int `envconfig:"DEFAULT_SNAPSHOT_MAX_LENGTH" default:"102400"` // 100KB
 }
 
 // Load reads configuration from environment variables
